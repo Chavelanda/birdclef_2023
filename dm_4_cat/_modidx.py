@@ -5,5 +5,7 @@ d = { 'settings': { 'branch': 'master',
                 'doc_host': 'https://Chavelanda.github.io',
                 'git_url': 'https://github.com/Chavelanda/dm-4-cat',
                 'lib_path': 'dm_4_cat'},
-  'syms': { 'dm_4_cat.core': {'dm_4_cat.core.foo': ('core.html#foo', 'dm_4_cat/core.py')},
+  'syms': { 'dm_4_cat.dataset': { 'dm_4_cat.dataset.DatasetManager': ('dataset.html#datasetmanager', 'dm_4_cat/dataset.py'),
+                                  'dm_4_cat.dataset.DatasetManager.__init__': ( 'dataset.html#datasetmanager.__init__',
+                                                                                'dm_4_cat/dataset.py')},
             'dm_4_cat.preprocessing': {'dm_4_cat.preprocessing.foo': ('preprocessing.html#foo', 'dm_4_cat/preprocessing.py')}}}
