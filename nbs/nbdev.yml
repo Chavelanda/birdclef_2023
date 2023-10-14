@@ -5,5 +5,5 @@ website:
   title: "dm-4-cat"
   site-url: "https://Chavelanda.github.io/dm-4-cat"
   description: "Project to train a Diffusion Model to generate realistic head CAT scans"
-  repo-branch: main
+  repo-branch: master
   repo-url: "https://github.com/Chavelanda/dm-4-cat"
