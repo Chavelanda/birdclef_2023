@@ -23,4 +23,10 @@ d = { 'settings': { 'branch': 'master',
                                                                                 'dm_4_cat/network.py'),
                                   'dm_4_cat.network.NetworkManager.get_model': ( 'network.html#networkmanager.get_model',
                                                                                  'dm_4_cat/network.py')},
-            'dm_4_cat.preprocessing': {'dm_4_cat.preprocessing.foo': ('preprocessing.html#foo', 'dm_4_cat/preprocessing.py')}}}
+            'dm_4_cat.preprocessing': {'dm_4_cat.preprocessing.foo': ('preprocessing.html#foo', 'dm_4_cat/preprocessing.py')},
+            'dm_4_cat.training_utils': { 'dm_4_cat.training_utils.compute_metrics': ( 'training_utils.html#compute_metrics',
+                                                                                      'dm_4_cat/training_utils.py'),
+                                         'dm_4_cat.training_utils.get_loss_func': ( 'training_utils.html#get_loss_func',
+                                                                                    'dm_4_cat/training_utils.py'),
+                                         'dm_4_cat.training_utils.get_optimizer': ( 'training_utils.html#get_optimizer',
+                                                                                    'dm_4_cat/training_utils.py')}}}
