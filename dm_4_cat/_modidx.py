@@ -14,6 +14,8 @@ d = { 'settings': { 'branch': 'master',
                                                                                 'dm_4_cat/dataset.py'),
                                   'dm_4_cat.dataset.DatasetManager.add_dataset': ( 'dataset.html#datasetmanager.add_dataset',
                                                                                    'dm_4_cat/dataset.py'),
+                                  'dm_4_cat.dataset.DatasetManager.get_dataloader': ( 'dataset.html#datasetmanager.get_dataloader',
+                                                                                      'dm_4_cat/dataset.py'),
                                   'dm_4_cat.dataset.DatasetManager.get_dataset': ( 'dataset.html#datasetmanager.get_dataset',
                                                                                    'dm_4_cat/dataset.py')},
             'dm_4_cat.preprocessing': {'dm_4_cat.preprocessing.foo': ('preprocessing.html#foo', 'dm_4_cat/preprocessing.py')}}}

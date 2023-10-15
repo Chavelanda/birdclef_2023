@@ -4,7 +4,7 @@
 __all__ = ['CATDataset', 'DatasetManager']
 
 # %% ../nbs/01_dataset.ipynb 3
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 
 # %% ../nbs/01_dataset.ipynb 5
 class CATDataset(Dataset):
@@ -45,3 +45,13 @@ def add_dataset(self:DatasetManager,
                 dataset_kwargs:dict):     # The parameters needed to instanciate the dataset
     "In order to use a different dataset it is possible to add it to the manager."
     self.dataset_dict[dataset_key] = (dataset_class, dataset_kwargs)
+
+# %% ../nbs/01_dataset.ipynb 16
+@patch
+def get_dataloader(self:DatasetManager,
+                dataset_key:str,            # The key to access the dataset
+                dataloader_kwargs:dict):    # The optional parameters for a pytorch dataloader
+    "A function to get a dataloader from a specific dataset"
+    dataset = self.get_dataset(dataset_key)
+
+    return DataLoader(dataset, **dataloader_kwargs)
