@@ -31,7 +31,8 @@ class DatasetManager:
 # %% ../nbs/01_dataset.ipynb 12
 @patch
 def get_dataset(self:DatasetManager,
-                 dataset:str): # A key of the dataset dictionary
+                 dataset:str        # A key of the dataset dictionary
+                )->Dataset:         # Pytorch dataset
     "A getter method to retrieve the wanted dataset."
     assert dataset in self.dataset_dict.keys(), f'{dataset} is not an existing dataset, choose one from {self.dataset_dict.keys()}.'
     ds_class, kwargs = self.dataset_dict[dataset]
@@ -50,7 +51,8 @@ def add_dataset(self:DatasetManager,
 @patch
 def get_dataloader(self:DatasetManager,
                 dataset_key:str,            # The key to access the dataset
-                dataloader_kwargs:dict):    # The optional parameters for a pytorch dataloader
+                dataloader_kwargs:dict      # The optional parameters for a pytorch dataloader
+                )->DataLoader:              # Pytorch dataloader
     "A function to get a dataloader from a specific dataset"
     dataset = self.get_dataset(dataset_key)
 

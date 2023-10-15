@@ -24,7 +24,8 @@ class NetworkManager:
 @patch
 def get_model(self:NetworkManager,
                 network:str, # A key of the network dictionary
-                weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None): # A a file-like object to the network weights
+                weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None   # A a file-like object to the network weights
+                )->Module:      # Pytorch model
     "A getter method to retrieve the wanted network"
     assert network in self.network_dict.keys(), f'{network} is not an existing network, choose one from {self.network_dict.keys()}.'
     
