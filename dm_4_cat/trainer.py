@@ -17,18 +17,18 @@ from .training_utils import get_optimizer, get_loss_func, compute_metrics
 
 # %% ../nbs/04_trainer.ipynb 4
 def log_weights(model, # A pytorch model
+                artifact_name, # The name of the artifact
                 config # wandb config
                 ):
     "A method to log artifacts into wandb"
 
     model_artifact = wandb.Artifact(
-        config.run_name, type="model",
-        description=config.description,
+        artifact_name, type="model",
         metadata=dict(config))
 
-    torch.save(model.state_dict(), f"{config.run_name}.pth")
+    torch.save(model.state_dict(), f"{artifact_name}.pth")
     
-    model_artifact.add_file(f"{config.run_name}.pth")
+    model_artifact.add_file(f"{artifact_name}.pth")
 
     wandb.log_artifact(model_artifact)
 
@@ -124,20 +124,20 @@ def train(conf = None # Wandb configurations containing all hyperparameters
 
     with wandb.init(conf) as run:
         config = wandb.config
-        run.name = f"{config.run_name}_{config.learning_rate}_"
+        run.name = f"{config.run_name}"
 
         # Getting dataloaders
-        train_dl = get_dataloader(config.train, batch_size=config.batch_size) # How to handle?
-        valid_dl = get_dataloader(config.val, batch_size=2*config.batch_size, shuffle=False) # How to handle?
-        test_dl = get_dataloader(config.test, batch_size=2*config.batch_size, shuffle=False) # How to handle?
+        train_dl = get_dataloader(config.train_key, **config.train_kwargs)
+        valid_dl = get_dataloader(config.val_key, **config.val_kwargs)
+        test_dl = get_dataloader(config.test_key, **config.val_kwargs)
 
         # Getting model, optimizer and loss function
-        model = get_model(config.model, config.model_kwargs)
+        model = get_model(config.model_key, **config.model_kwargs)
         model.to(config.device)
-        optimizer = get_optimizer(config.optim, config.optimizer, config.learning_rate) # How to handle?
-        loss_func = get_loss_func(config.loss)
+        optimizer = get_optimizer(config.optimizer_key, **config.optimizer_kwargs)
+        loss_func = get_loss_func(config.loss_key)
 
-        n_steps_per_epoch = math.ceil(len(train_dl.dataset) / config.batch_size)
+        n_steps_per_epoch = math.ceil(len(train_dl.dataset) / config.train_kwargs.batch_size)
 
         # Counters
         example_ct = 0
@@ -167,7 +167,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
                 best_val = val_metrics[f'val/{config.metric}']
                 best_example, best_step, best_epoch = example_ct, step_ct, epoch
                 best_model = copy.deepcopy(model)
-                log_weights(model, config)
+                log_weights(model, config.run_name, config)
 
         print("\tTesting with best model")
         # Test best model
