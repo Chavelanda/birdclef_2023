@@ -4,3 +4,7 @@ website:
       - index.ipynb
       - 00_preprocessing.ipynb
       - 01_dataset.ipynb
+      - 02_network.ipynb
+      - 03_training_utils.ipynb
+      - 04_trainer.ipynb
+      - 05_experiment.ipynb
