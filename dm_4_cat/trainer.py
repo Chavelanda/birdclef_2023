@@ -13,7 +13,7 @@ import torch
 
 from .dataset import get_dataloader
 from .network import get_model
-from .training_utils import get_optimizer, get_loss_func, compute_metrics
+from .training_utils import get_optimizer, get_loss_func, compute_metrics, metrics_dict
 
 # %% ../nbs/04_trainer.ipynb 4
 def log_weights(model, # A pytorch model
@@ -126,6 +126,9 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         config = wandb.config
         run.name = f"{config.run_name}"
 
+        # Checking that the defined metric exist
+        assert config.metric in metrics_dict, f'{config.metric} is not an existing metric, choose one from {metrics_dict.keys()}.'
+
         # Getting dataloaders
         train_dl = get_dataloader(config.train_key, **config.train_kwargs)
         valid_dl = get_dataloader(config.val_key, **config.val_kwargs)
@@ -162,7 +165,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
             print("\tMetrics logged to wandb")
 
             # If the best metric is reached, save the artifact
-            if val_metrics[f'val/{config.metric}'] > best_val:
+            if metrics_dict[config.metric](val_metrics[f'val/{config.metric}'], best_val):
                 print(f'\t{config.metric} in the validation set has improved!')
                 best_val = val_metrics[f'val/{config.metric}']
                 best_example, best_step, best_epoch = example_ct, step_ct, epoch
