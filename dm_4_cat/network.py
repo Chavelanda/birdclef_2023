@@ -17,10 +17,10 @@ model_dict = {
         }
 
 def get_model(model_key:str, # A key of the model dictionary
-              weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None   # A a file-like object to the model weights
+              weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None   # A file-like object to the model weights
               )->Module:      # A pytorch model
-    "A getter method to retrieve the wanted model"
-    assert model_key in model_dict, f'{network} is not an existing network, choose one from {model_dict.keys()}.'
+    "A getter method to retrieve the wanted (possibly pretrained) model"
+    assert model_key in model_dict, f'{model_key} is not an existing network, choose one from {model_dict.keys()}.'
     
     net_class, kwargs = model_dict[model_key]
     model = net_class(**kwargs)

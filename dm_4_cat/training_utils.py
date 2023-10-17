@@ -32,11 +32,6 @@ def get_optimizer(optim:str, # Key into the optimizer dictionary
     return optimizers_dict[optim](**kwargs)
 
 # %% ../nbs/03_training_utils.ipynb 8
-metrics_dict = {
-    'loss': lt,
-    'step': gt
-}
-
 def compute_metrics(name:str,               # Name of the training stage (train, val, test)
                     outputs:torch.Tensor,   # The output of the model       
                     labels:torch.Tensor,    # The ground truth
@@ -53,3 +48,9 @@ def compute_metrics(name:str,               # Name of the training stage (train,
             f'{name}/step_ct': step_ct,
             f'{name}/epoch': epoch
             }
+
+# %% ../nbs/03_training_utils.ipynb 9
+metrics_dict = {
+    'loss': lt,
+    'step': gt
+}
