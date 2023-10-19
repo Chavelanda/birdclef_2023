@@ -3,7 +3,7 @@
 # %% auto 0
 __all__ = []
 
-# %% ../nbs/05_experiment.ipynb 3
+# %% ../nbs/05_experiment.ipynb 4
 import wandb
 
 from .trainer import train
