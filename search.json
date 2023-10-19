@@ -1,0 +1,86 @@
+[
+  {
+    "objectID": "trainer.html",
+    "href": "trainer.html",
+    "title": "trainer",
+    "section": "",
+    "text": "source\n\nlog_weights\n\n log_weights (model, artifact_name, config)\n\nA method to log artifacts into wandb\n\n\n\n\nDetails\n\n\n\n\nmodel\nA pytorch model\n\n\nartifact_name\nThe name of the artifact\n\n\nconfig\nwandb config\n\n\n\n\nsource\n\n\ntrain_one_epoch\n\n train_one_epoch (model, train_dl, loss_func, optimizer, device, epoch,\n                  example_ct, step_ct, n_steps_per_epoch)\n\nTrain a pytorch model for one epoch\n\n\n\n\nDetails\n\n\n\n\nmodel\nA pytorch model\n\n\ntrain_dl\nA pytorch dataloader\n\n\nloss_func\nA function to compute the loss\n\n\noptimizer\nThe optimizer\n\n\ndevice\nThe device where the training is executed (‘cpu’|‘cuda’)\n\n\nepoch\nThe epoch the model is training\n\n\nexample_ct\nThe number of examples the model has been trained on\n\n\nstep_ct\nThe number of backpropagation steps the model has done\n\n\nn_steps_per_epoch\nThe number of steps for each epoch\n\n\n\n\nsource\n\n\nvalidate_model\n\n validate_model (model, valid_dl, loss_func, device, epoch, example_ct,\n                 step_ct, dataset_type='val')\n\nTest or validate a pytorch model\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmodel\n\n\nA pytorch model\n\n\nvalid_dl\n\n\nA pytorch dataloader\n\n\nloss_func\n\n\nThe loss function\n\n\ndevice\n\n\nThe device where the training is executed (‘cpu’|‘cuda’)\n\n\nepoch\n\n\nThe epoch the model has been trained\n\n\nexample_ct\n\n\nThe number of examples the model has been trained on\n\n\nstep_ct\n\n\nThe number of backpropagation steps the model has done\n\n\ndataset_type\nstr\nval\nThe name of the dataset used\n\n\n\n\nsource\n\n\ntrain\n\n train (conf=None)\n\nTrain, validate and test a model using the given configurations\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nconf\nNoneType\nNone\nWandb configurations containing all hyperparameters\n\n\n\nThe configuration parameters (config) used in the train function are accessed using wandb.config and are defined by the user when calling the wandb.init function. Here’s a list of the config parameters needed in the provided train function:\n\nrun_name: Name for the run.\ntrain_key: Key to obtain the training dataset.\ntrain_kwargs: Additional keyword arguments for obtaining the training dataloader.\nval_key: Key to obtain the validation dataset.\ntest_key: Key to obtain the test dataset.\nval_kwargs: Additional keyword arguments for obtaining the validation or test dataloader.\nmodel_key: Key to obtain the model.\nmodel_kwargs: Additional keyword arguments for obtaining the model.\noptimizer_key: Key to obtain the optimizer.\noptimizer_kwargs: Additional keyword arguments for obtaining the optimizer.\nloss_key: Key to obtain the loss function to be used.\ndevice: Device for training (e.g., “cuda” for GPU, “cpu” for CPU).\nepochs: Number of training epochs.\nmetric: Metric to use for determining the best model (e.g., accuracy, f1-score)."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "dm-4-cat",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation."
+  },
+  {
+    "objectID": "index.html#install",
+    "href": "index.html#install",
+    "title": "dm-4-cat",
+    "section": "Install",
+    "text": "Install\npip install dm_4_cat"
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "dm-4-cat",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2"
+  },
+  {
+    "objectID": "dataset.html",
+    "href": "dataset.html",
+    "title": "dataset",
+    "section": "",
+    "text": "source\n\n\n\n CATDataset ()\n\nPytorch dataset to handle CAT scans data\n\nds_test = CATDataset()\nprint(f'The dataset has length {len(ds_test)}')\nprint(f'This is an example from the dataset:\\n{ds_test.__getitem__(0)}')\n\nThe dataset has length 0\nThis is an example from the dataset:\nNone"
+  },
+  {
+    "objectID": "dataset.html#pytorch-dataset-of-cat-scans",
+    "href": "dataset.html#pytorch-dataset-of-cat-scans",
+    "title": "dataset",
+    "section": "",
+    "text": "source\n\n\n\n CATDataset ()\n\nPytorch dataset to handle CAT scans data\n\nds_test = CATDataset()\nprint(f'The dataset has length {len(ds_test)}')\nprint(f'This is an example from the dataset:\\n{ds_test.__getitem__(0)}')\n\nThe dataset has length 0\nThis is an example from the dataset:\nNone"
+  },
+  {
+    "objectID": "dataset.html#handling-datasets-and-dataloaders",
+    "href": "dataset.html#handling-datasets-and-dataloaders",
+    "title": "dataset",
+    "section": "Handling datasets and dataloaders",
+    "text": "Handling datasets and dataloaders\nAfter creating the CATDataset it is possible to handle the different versions (train, val, test…) of the dataset using a dictionary and a getter function. Since pytorch trains models using dataloaders we also need to create a method to retrieve them.\n\nsource\n\nget_dataset\n\n get_dataset (dataset_key:str)\n\nA getter method to retrieve the wanted dataset.\n\n\n\n\nType\nDetails\n\n\n\n\ndataset_key\nstr\nA key of the dataset dictionary\n\n\nReturns\nDataset\nPytorch dataset\n\n\n\n\n\nThe existing keys are:\n\n\n\nAdd example of getting CATDataset\n\npass\n\n\nsource\n\n\nget_dataloader\n\n get_dataloader (dataset_key:str, dataloader_kwargs:dict)\n\nA function to get a dataloader from a specific dataset\n\n\n\n\n\n\n\n\n\nType\nDetails\n\n\n\n\ndataset_key\nstr\nThe key to access the dataset\n\n\ndataloader_kwargs\ndict\nThe optional parameters for a pytorch dataloader\n\n\nReturns\nDataLoader\nPytorch dataloader\n\n\n\nAn example of getting a dataloader\n\npass"
+  },
+  {
+    "objectID": "training_utils.html",
+    "href": "training_utils.html",
+    "title": "training_utils",
+    "section": "",
+    "text": "source\n\nget_loss_func\n\n get_loss_func (loss:str)\n\nGetter method to retrieve a loss function\n\n\n\n\nType\nDetails\n\n\n\n\nloss\nstr\nKey into the losses dictionary\n\n\n\n\n\nThe existing keys are:\n\n\n\n\nsource\n\n\nget_optimizer\n\n get_optimizer (optim:str, kwargs:dict)\n\nGetter method to retrieve an optimizer\n\n\n\n\nType\nDetails\n\n\n\n\noptim\nstr\nKey into the optimizer dictionary\n\n\nkwargs\ndict\nOptimizer parameters\n\n\n\n\n\nThe existing keys are:\n\n\n\n\nsource\n\n\ncompute_metrics\n\n compute_metrics (name:str, outputs:torch.Tensor, labels:torch.Tensor,\n                  loss:float, example_ct:int, step_ct:int, epoch:float)\n\nCompute new metrics from outputs and labels and format existing ones.\n\n\n\n\nType\nDetails\n\n\n\n\nname\nstr\nName of the training stage (train, val, test)\n\n\noutputs\nTensor\nThe output of the model\n\n\nlabels\nTensor\nThe ground truth\n\n\nloss\nfloat\nThe loss of the model\n\n\nexample_ct\nint\nNumber of examples processed by the model\n\n\nstep_ct\nint\nNumber of backpropagation steps the model has done\n\n\nepoch\nfloat\nThe training epoch\n\n\nReturns\ndict\nDictionary of the metrics\n\n\n\nA metrics dictionary is also provided having metrics names as key and comparison functions as values.\n\n\nThe existing keys are:\nloss\nstep\n\n\nThe function in the metrics dictionary specify which operator must be used to evaluate the better metric. For instance we consider a loss to be better when is smaller.\n\ntest_eq(metrics_dict['loss'](0.1, 0.2), True)\ntest_eq(metrics_dict['loss'](0.05, 0.001), False)\ntest_eq(metrics_dict['step'](500, 420), True)"
+  },
+  {
+    "objectID": "preprocessing.html",
+    "href": "preprocessing.html",
+    "title": "preprocessing",
+    "section": "",
+    "text": "source\n\nfoo\n\n foo ()"
+  },
+  {
+    "objectID": "experiment.html",
+    "href": "experiment.html",
+    "title": "experiment",
+    "section": "",
+    "text": "These are the variables that must be set to start an experiment:\n\nproject: The name of the wandb project where the training, evaluation and test results will be logged and stored.\nentity: The wandb entity associated with the project.\nsweep_name: The name given to the sweep configuration, which defines the hyperparameter search setup for an experiment. It’s used to organize and categorize different hyperparameter tuning runs.\nmethod: The method or strategy used for hyperparameter tuning. In this case, ‘random’ suggests that hyperparameters will be randomly chosen from the specified ranges or values during the sweep.\nn_runs: The number of runs or iterations that will be performed during the hyperparameter sweep. Each run involves training the model with a specific set of hyperparameters.\nrun_name: The name given to each individual run or iteration of the experiment. It helps identify and differentiate between different runs, providing a meaningful label for tracking and analysis.\ndevice: The computational device (e.g., ‘cpu’, ‘cuda’) on which the training and evaluation of the model will be performed.\ntrain_key: Key or identifier used to access the training dataset. Refer to get_dataset for info about available keys.\nval_key: Key or identifier used to access the validation dataset. Refer to get_dataset for info about available keys.\ntest_key: Key or identifier used to access the test dataset. Refer to get_dataset for info about available keys.\nbatch_size: The number of samples in each mini-batch during training. It affects the efficiency of the training process and the model’s ability to generalize.\nnum_workers: The number of worker threads used to load data in parallel during training. It can help speed up the data loading process.\npin_memory: A boolean indicating whether to pin memory for faster data transfer to the GPU. This is often beneficial when using a GPU for training.\nmodel_key: Key or identifier used to specify the model architecture to be used for training. Refer to get_model for info about available keys.\noptimizer_key: Key or identifier used to specify the optimizer to be used during the training process. Refer to get_optimizer for info about available keys.\nlearning_rate: A list of learning rates to be used by the optimizer during training. Learning rate is a crucial hyperparameter affecting the convergence and performance of the model.\nloss_key: Key or identifier used to specify the loss function to be used during training. Refer to get_loss_func for info about available keys.\nmetric: The metric used to evaluate the model’s performance. This metric is used to compare and choose the best model in a single run. Refer to compute_metrics for info about available metrics.\nepochs: The number of epochs or complete passes through the training dataset during the training process. One epoch is a single pass through the entire training dataset.\n\n\nproject = ''\nentity = ''\n\nsweep_name = 'test' \nmethod = 'random'\nn_runs = 1\n\nrun_name = 'test' \ndevice = 'cpu' \ntrain_key = '' \nval_key = '' \ntest_key = '' \nbatch_size = 1\nnum_workers = 2\npin_memory = True\nmodel_key = '' \noptimizer_key = '' \nlearning_rate = [0.0001] \nloss_key = ''\nmetric = ''\nepochs = 1\n\nCreating the experiment configuration as dict.\n\nsweep_config = {\n    'name': sweep_name,\n    'method': method,\n    'parameters': {\n        'run_name': {\n            'value': run_name\n        },\n        'device': {\n            'value': device\n        },\n        'train_key': {\n            'value': train_key\n        },\n        'train_kwargs': {\n            'parameters': {\n                'batch_size': {\n                    'value': batch_size\n                },\n                'shuffle': {\n                    'value': True\n                },\n                'num_workers': {\n                    'value': num_workers \n                },\n                'pin_memory': {\n                    'value': pin_memory\n                }\n            }\n        },\n        'val_key': {\n            'value': val_key\n        },\n        'test_key': {\n            'value': test_key\n        },\n        'val_kwargs': {\n            'parameters': {\n                'batch_size': {\n                    'value': batch_size\n                },\n                'shuffle': {\n                    'value': False\n                },\n                'num_workers': {\n                    'value': num_workers \n                },\n                'pin_memory': {\n                    'value': pin_memory\n                }\n            }\n        },\n        'model_key': {\n            'value': model_key\n        },\n        'model_kwargs': {\n            'parameters': {\n                \n            }\n        },\n        'optimizer_key': {\n            'value': optimizer_key\n        },\n        'optimizer_kwargs': {\n            'parameters': {\n                'learning_rate': {\n                    'values': learning_rate\n                },\n            }\n        },\n        'loss_key': {\n            'value': loss_key\n        },\n        'metric': {\n            'value': metric\n        },\n        'epochs': {\n            'value': epochs\n        }\n    }  \n}\n\nRunning a sweep.\n\nsweep_id = wandb.sweep(sweep_config, project=project, entity=entity)\nwandb.agent(\n    sweep_id,\n    train,\n    count=n_runs)"
+  },
+  {
+    "objectID": "network.html",
+    "href": "network.html",
+    "title": "network",
+    "section": "",
+    "text": "As for the datasets and dataloaders, also in this case we need a way to retrieve the created models.\n\nsource\n\n\n\n get_model (model_key:str,\n            weights_path:Union[str,os.PathLike,BinaryIO,IO[bytes]]=None)\n\nA getter method to retrieve the wanted (possibly pretrained) model\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmodel_key\nstr\n\nA key of the model dictionary\n\n\nweights_path\ntyping.Union[str, os.PathLike, typing.BinaryIO, typing.IO[bytes]]\nNone\nA file-like object to the model weights\n\n\nReturns\nModule\n\nA pytorch model\n\n\n\n\n\nThe existing keys are:"
+  },
+  {
+    "objectID": "network.html#handling-models",
+    "href": "network.html#handling-models",
+    "title": "network",
+    "section": "",
+    "text": "As for the datasets and dataloaders, also in this case we need a way to retrieve the created models.\n\nsource\n\n\n\n get_model (model_key:str,\n            weights_path:Union[str,os.PathLike,BinaryIO,IO[bytes]]=None)\n\nA getter method to retrieve the wanted (possibly pretrained) model\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nmodel_key\nstr\n\nA key of the model dictionary\n\n\nweights_path\ntyping.Union[str, os.PathLike, typing.BinaryIO, typing.IO[bytes]]\nNone\nA file-like object to the model weights\n\n\nReturns\nModule\n\nA pytorch model\n\n\n\n\n\nThe existing keys are:"
+  }
+]
