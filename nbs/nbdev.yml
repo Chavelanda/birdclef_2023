@@ -2,8 +2,8 @@ project:
   output-dir: _docs
 
 website:
-  title: "dm-4-cat"
-  site-url: "https://Chavelanda.github.io/dm-4-cat"
-  description: "Project to train a Diffusion Model to generate realistic head CAT scans"
+  title: "birdclef_2023"
+  site-url: "https://Chavelanda.github.io/birdclef_2023"
+  description: "Identify bird calls in soundscapes"
   repo-branch: master
-  repo-url: "https://github.com/Chavelanda/dm-4-cat"
+  repo-url: "https://github.com/Chavelanda/birdclef_2023"

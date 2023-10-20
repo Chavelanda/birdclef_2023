@@ -149,3 +149,12 @@ checklink/cookies.txt
 
 # Quarto
 .quarto
+
+# Data folder
+data/
+
+# wandb folder
+wandb/
+
+# weight files
+**.pth
