@@ -55,7 +55,7 @@ def compute_metrics(name:str,               # Name of the training stage (train,
         "Compute new metrics from outputs and labels and format existing ones."
 
         # Transforming logits in probabilities
-        outputs = torch.nn.functional.softmax(outputs)
+        outputs = torch.nn.functional.softmax(outputs, dim=1)
 
         # Transforming outputs into one hot encoding
         outputs = torch.zeros_like(outputs).scatter_(1, torch.argmax(outputs, dim=1).unsqueeze(-1), 1.)
@@ -90,7 +90,8 @@ def show_one_example(inputs:torch.Tensor, # The inputs to the model
                      outputs:torch.Tensor): # The model prediction
     "A function that shows one input to the model together with its label and prediction"
     inputs, labels, outputs = inputs.cpu(), labels.cpu(), outputs.cpu()
-    outputs = torch.nn.functional.softmax(outputs)
+    print(outputs.shape)
+    outputs = torch.nn.functional.softmax(outputs, dim=1)
 
     print(f'Ground truth: {labels[0]}\nOutputs: {outputs[0]}')
     plot_spectrogram(inputs[0][0], db=True)
