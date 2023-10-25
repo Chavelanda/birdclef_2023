@@ -28,18 +28,22 @@ from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spect
 class MyPipeline(torch.nn.Module):
     def __init__(
         self,
-        c_length = 10,
+        seconds = 5,
         sample_rate=32000,
-        f_min = 40,
-        f_max = 15000,
+        f_min = 50,
+        f_max = 16000,
         n_fft=2048,
         n_mels=128,
-        hop_length = 512,
+        hop_length = 1024,
         power = 2.0
     ):
         super().__init__()
 
-        self.c_length = c_length * 62.6 #626 sono 10 secondi
+        self.n_fft = n_fft
+        self.seconds = seconds
+        self.c_length = seconds * sample_rate // hop_length +1
+        print(self.c_length)
+        # self.c_length = c_length * 62.6 #626 sono 10 secondi
         self.sample_rate = sample_rate
         self.melspec = torchaudio.transforms.MelSpectrogram(sample_rate=self.sample_rate, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels, f_min=f_min, f_max=f_max, power=power)
         self.amptodb = torchaudio.transforms.AmplitudeToDB()
@@ -54,7 +58,7 @@ class MyPipeline(torch.nn.Module):
 
     def forward(self, filename):
         # 0 Load the File
-        waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=320000)
+        waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
         
         # 1 Check for the sample rate and eventually resample to 32k
         if sample_rate != self.sample_rate:
@@ -95,10 +99,24 @@ class MyPipeline(torch.nn.Module):
           replay_rate =  mel.shape[2]/self.c_length
           #print(f"replay rate {replay_rate}%")
           mel = self.stretch(mel, replay_rate)
-          mel = mel[:,:,0:626]
+          mel = mel[:,:,0:self.c_length]
           #print(f"stretched shape {stretched.shape}")
 
         return mel.float()
+    
+    def inverse_transform(self, mel):
+        n_stft = self.n_fft // 2 + 1
+        mel = mel.cpu()
+        mel = mel[:,:,0:self.c_length]
+        print(mel.shape)
+        invers_transform = torchaudio.transforms.InverseMelScale(sample_rate=self.sample_rate, n_stft=n_stft)
+        grifflim_transform = torchaudio.transforms.GriffinLim(n_fft=self.n_fft)
+
+        mel = torch.pow(10, mel/10)
+        inverse_waveform = invers_transform(mel)
+        pseudo_waveform = grifflim_transform(inverse_waveform)
+
+        return pseudo_waveform
 
 # %% ../nbs/02_dataset.ipynb 9
 class BirdClef(Dataset):

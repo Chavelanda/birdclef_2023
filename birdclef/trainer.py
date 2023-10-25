@@ -52,10 +52,13 @@ def train_one_epoch(model,                  # A pytorch model
 
     for step, (inputs, labels) in enumerate(train_dl):
         inputs, labels = inputs.to(device), labels.to(device)
+        
+        optimizer.zero_grad()
+
         outputs = model(inputs)
 
         train_loss = loss_func(outputs, labels)
-        optimizer.zero_grad()
+        
         train_loss.backward()
         optimizer.step()
 

@@ -21,7 +21,7 @@ def plot_specgram(waveform:torch.Tensor, # The tensor containing the waveform
                   sample_rate:int,  # The sample rate of the audio file 
                   title:str="Spectrogram", # The title of the plot
                   axes=None):
-    "A function to plot the specgram of an audio"
+    "A function to plot the specgram from a waveform"
     waveform = waveform.numpy()
 
     num_channels, num_frames = waveform.shape
@@ -98,6 +98,7 @@ def mel_to_wave(mel_specgram:torch.Tensor, # The tensor of the mel specgram
     "Function used to recover a waveform from a mel spectrogram"
     n_stft = int((n_fft//2) + 1)
     mel_specgram = mel_specgram.cpu()
+    mel_specgram = torch.pow(10, mel_specgram/10)
     invers_transform = torchaudio.transforms.InverseMelScale(sample_rate=sample_rate, n_stft=n_stft)
     grifflim_transform = torchaudio.transforms.GriffinLim(n_fft=n_fft)
 
@@ -107,13 +108,16 @@ def mel_to_wave(mel_specgram:torch.Tensor, # The tensor of the mel specgram
     return pseudo_waveform
 
 # %% ../nbs/00_utils.ipynb 9
-def plot_spectrogram(specgram, title=None, ylabel="freq_bin", ax=None):
+def plot_spectrogram(specgram, title=None, ylabel="freq_bin", ax=None, db=False):
     if ax is None:
         _, ax = plt.subplots(1, 1)
     if title is not None:
         ax.set_title(title)
     ax.set_ylabel(ylabel)
-    ax.imshow(librosa.power_to_db(specgram), origin="lower", aspect="auto", interpolation="nearest")
+    if not db:
+        specgram = librosa.power_to_db(specgram)
+    ax.imshow(specgram, origin="lower", aspect="auto", interpolation="nearest")
+    plt.show()
 
 
 def plot_fbank(fbank, title=None):

@@ -4,16 +4,20 @@
 __all__ = ['losses_dict', 'optimizers_dict', 'metrics_dict', 'callback_dict', 'get_loss_func', 'get_optimizer', 'compute_metrics',
            'show_one_example', 'get_callback_func']
 
-# %% ../nbs/04_training_utils.ipynb 3
+# %% ../nbs/04_training_utils.ipynb 4
 from operator import gt, lt
+from IPython.display import Audio
+from IPython.core.display import display
 
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 import torch
 
-# %% ../nbs/04_training_utils.ipynb 4
+from .utils import plot_spectrogram, mel_to_wave
+
+# %% ../nbs/04_training_utils.ipynb 5
 losses_dict = {
-    'bce': torch.nn.BCEWithLogitsLoss
+    'ce': torch.nn.CrossEntropyLoss
 }
 
 def get_loss_func(loss:str # Key into the losses dictionary
@@ -24,7 +28,7 @@ def get_loss_func(loss:str # Key into the losses dictionary
     
     return losses_dict[loss]()
 
-# %% ../nbs/04_training_utils.ipynb 6
+# %% ../nbs/04_training_utils.ipynb 7
 optimizers_dict = {
     'adamw': torch.optim.AdamW
 }
@@ -39,7 +43,7 @@ def get_optimizer(optim:str, # Key into the optimizer dictionary
     
     return optimizers_dict[optim](model.parameters(), **kwargs)
 
-# %% ../nbs/04_training_utils.ipynb 8
+# %% ../nbs/04_training_utils.ipynb 9
 def compute_metrics(name:str,               # Name of the training stage (train, val, test)
                     outputs:torch.Tensor,   # The output of the model       
                     labels:torch.Tensor,    # The ground truth
@@ -51,7 +55,7 @@ def compute_metrics(name:str,               # Name of the training stage (train,
         "Compute new metrics from outputs and labels and format existing ones."
 
         # Transforming logits in probabilities
-        outputs = torch.nn.functional.sigmoid(outputs)
+        outputs = torch.nn.functional.softmax(outputs)
 
         # Transforming outputs into one hot encoding
         outputs = torch.zeros_like(outputs).scatter_(1, torch.argmax(outputs, dim=1).unsqueeze(-1), 1.)
@@ -70,7 +74,7 @@ def compute_metrics(name:str,               # Name of the training stage (train,
             f'{name}/f1': f1_weighted,
             }
 
-# %% ../nbs/04_training_utils.ipynb 9
+# %% ../nbs/04_training_utils.ipynb 10
 metrics_dict = {
     'loss': lt,
     'step': gt,
@@ -80,11 +84,21 @@ metrics_dict = {
     'f1': gt,
 }
 
-# %% ../nbs/04_training_utils.ipynb 15
-def show_one_example(inputs, labels, outputs):
-    print('Here i will show one example')
-
 # %% ../nbs/04_training_utils.ipynb 16
+def show_one_example(inputs:torch.Tensor, # The inputs to the model
+                     labels:torch.Tensor, # The ground truth
+                     outputs:torch.Tensor): # The model prediction
+    "A function that shows one input to the model together with its label and prediction"
+
+    outputs = torch.nn.functional.softmax(outputs)
+
+    print(f'Ground truth: {labels[0]}\nOutputs: {outputs[0]}')
+    plot_spectrogram(inputs[0][0], db=True)
+    waveform = mel_to_wave(inputs[0][0])
+    display(Audio(waveform.numpy(), rate=32000))
+    
+
+# %% ../nbs/04_training_utils.ipynb 18
 callback_dict = {
     '': None,
     'show': show_one_example
