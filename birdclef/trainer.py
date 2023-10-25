@@ -13,7 +13,7 @@ import torch
 
 from .dataset import get_dataloader
 from .network import get_model
-from .training_utils import get_optimizer, get_loss_func, compute_metrics, metrics_dict
+from .training_utils import get_optimizer, get_loss_func, get_callback_func, compute_metrics, metrics_dict
 
 # %% ../nbs/05_trainer.ipynb 4
 def log_weights(model, # A pytorch model
@@ -42,6 +42,8 @@ def train_one_epoch(model,                  # A pytorch model
                     example_ct,             # The number of examples the model has been trained on
                     step_ct,                # The number of backpropagation steps the model has done
                     n_steps_per_epoch,      # The number of steps for each epoch
+                    callback_step,          # Steps indicating when the callback function must be called
+                    callback_func           # Callback function
                     ):
     "Train a pytorch model for one epoch"
 
@@ -65,6 +67,9 @@ def train_one_epoch(model,                  # A pytorch model
         if (step + 1) < n_steps_per_epoch:
             # Log train metrics to wandb
             wandb.log(metrics)
+        # Run callback func
+        if callback_func is not None and step_ct % callback_step == 0:
+            callback_func(inputs, labels, outputs)
 
         step_ct += 1
         progress_bar.update(1)
@@ -138,6 +143,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         model.to(config.device)
         optimizer = get_optimizer(config.optimizer_key, model, config.optimizer_kwargs)
         loss_func = get_loss_func(config.loss_key)
+        callback_func = get_callback_func(config.callback_key)
 
         n_steps_per_epoch = math.ceil(len(train_dl.dataset) / config.train_kwargs['batch_size'])
 
@@ -149,7 +155,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         for epoch in range(config.epochs):
             print(f"Training epoch {epoch}")
             # Train
-            metrics, example_ct, step_ct = train_one_epoch(model, train_dl, loss_func, optimizer, config.device, epoch, example_ct, step_ct, n_steps_per_epoch)
+            metrics, example_ct, step_ct = train_one_epoch(model, train_dl, loss_func, optimizer, config.device, epoch, example_ct, step_ct, n_steps_per_epoch, config.callback_step, callback_func)
 
             print("\tFinished training. Starting validation")
 
