@@ -41,8 +41,7 @@ class MyPipeline(torch.nn.Module):
 
         self.n_fft = n_fft
         self.seconds = seconds
-        self.c_length = seconds * sample_rate // hop_length +1
-        print(self.c_length)
+        self.c_length = seconds * sample_rate // hop_length + 1
         # self.c_length = c_length * 62.6 #626 sono 10 secondi
         self.sample_rate = sample_rate
         self.melspec = torchaudio.transforms.MelSpectrogram(sample_rate=self.sample_rate, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels, f_min=f_min, f_max=f_max, power=power)
