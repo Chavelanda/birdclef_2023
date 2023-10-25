@@ -89,7 +89,7 @@ def show_one_example(inputs:torch.Tensor, # The inputs to the model
                      labels:torch.Tensor, # The ground truth
                      outputs:torch.Tensor): # The model prediction
     "A function that shows one input to the model together with its label and prediction"
-
+    inputs, labels, outputs = inputs.cpu(), labels.cpu(), outputs.cpu()
     outputs = torch.nn.functional.softmax(outputs)
 
     print(f'Ground truth: {labels[0]}\nOutputs: {outputs[0]}')
