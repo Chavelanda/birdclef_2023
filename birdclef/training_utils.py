@@ -91,7 +91,7 @@ def show_one_example(data, # The data received by the pytorch dataset
     "A function that shows one input to the model together with its label and prediction"
 
     inputs, labels, filename = data['input'], data['label'], data['filename']
-    print(f'Showing {filename}')
+    print(f'Showing {filename[0]}')
     inputs, labels, outputs = inputs.cpu(), labels.cpu(), outputs.cpu()
     print(f'The shape of the output: {outputs.shape}')
     outputs = torch.nn.functional.softmax(outputs, dim=1)
