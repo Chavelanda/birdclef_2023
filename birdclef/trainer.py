@@ -50,7 +50,8 @@ def train_one_epoch(model,                  # A pytorch model
     model.train()
     progress_bar = tqdm(range(len(train_dl)))
 
-    for step, (inputs, labels) in enumerate(train_dl):
+    for step, data in enumerate(train_dl):
+        inputs, labels = data['input'], data['label']
         inputs, labels = inputs.to(device), labels.to(device)
         
         optimizer.zero_grad()
@@ -72,7 +73,7 @@ def train_one_epoch(model,                  # A pytorch model
             wandb.log(metrics)
         # Run callback func
         if callback_func is not None and step_ct % callback_step == 0:
-            callback_func(inputs, labels, outputs)
+            callback_func(data, outputs)
 
         step_ct += 1
         progress_bar.update(1)
@@ -100,8 +101,8 @@ def validate_model(model, # A pytorch model
     
     progress_bar = tqdm(range(len(valid_dl)))
     with torch.inference_mode():
-        for i, (inputs, labels) in enumerate(valid_dl):
-
+        for i, data in enumerate(valid_dl):
+            inputs, labels = data['input'], data['label']
             inputs, labels = inputs.to(device), labels.to(device)
 
             # Forward pass

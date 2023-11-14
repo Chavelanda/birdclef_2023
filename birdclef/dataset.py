@@ -145,7 +145,7 @@ class BirdClef(Dataset):
         label = self.labels[idx]
         label = torch.from_numpy(label).float()
 
-        return mel_spectrogram, label
+        return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
 # %% ../nbs/02_dataset.ipynb 13
 dir = DATA_DIR

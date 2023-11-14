@@ -12,6 +12,7 @@ from IPython.core.display import display
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 
 import torch
+import torchaudio
 
 from .utils import plot_spectrogram, mel_to_wave
 
@@ -85,18 +86,23 @@ metrics_dict = {
 }
 
 # %% ../nbs/04_training_utils.ipynb 16
-def show_one_example(inputs:torch.Tensor, # The inputs to the model
-                     labels:torch.Tensor, # The ground truth
+def show_one_example(data, # The data received by the pytorch dataset
                      outputs:torch.Tensor): # The model prediction
     "A function that shows one input to the model together with its label and prediction"
+
+    inputs, labels, filename = data['input'], data['label'], data['filename']
+    print(f'Showing {filename}')
     inputs, labels, outputs = inputs.cpu(), labels.cpu(), outputs.cpu()
-    print(outputs.shape)
+    print(f'The shape of the output: {outputs.shape}')
     outputs = torch.nn.functional.softmax(outputs, dim=1)
 
     print(f'Ground truth: {labels[0]}\nOutputs: {outputs[0]}')
     plot_spectrogram(inputs[0][0], db=True)
     waveform = mel_to_wave(inputs[0][0])
     display(Audio(waveform.numpy(), rate=32000))
+    waveform, sample_rate = torchaudio.load(filename[0])
+    display(Audio(waveform,  rate=sample_rate))
+
     
 
 # %% ../nbs/04_training_utils.ipynb 18
