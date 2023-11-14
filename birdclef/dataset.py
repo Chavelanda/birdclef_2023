@@ -65,11 +65,30 @@ class MyPipeline(torch.nn.Module):
            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
            waveform = resampler(waveform)
 
-        # 2 Convert to mel-scale
-        mel = self.melspec(waveform)
+        # 2 Noise gating
+        threshold_linear = waveform.std()
+        window_size = 2000
+        # Pad the waveform to ensure the envelope has the same length
+        padding = (window_size) // 2 
+        padded_waveform = torch.nn.functional.pad(waveform.unsqueeze(0), (padding, padding), 'constant', value=0).squeeze(0)
+
+        # Calculate the envelope using a moving average filter
+        envelope = torch.nn.functional.avg_pool1d(padded_waveform.abs().unsqueeze(0), kernel_size=window_size, stride=1).squeeze(0)
+        envelope = envelope[:, :waveform.shape[1]]
+        print(envelope.shape)
+
+        # Create a binary mask based on the energy and threshold
+        gate_mask = envelope >= threshold_linear
+
+        # Apply the gating mask to the waveform
+        gated_waveform = waveform.clone()
+        gated_waveform[~gate_mask] *= 0.1
+
+        # 3 Convert to mel-scale
+        mel = self.melspec(gated_waveform)
         mel = self.amptodb(mel)
      
-        # 5 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
+        # 4 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
           print("Audio too short: stretching it.")
           replay_rate =  mel.shape[2]/self.c_length
