@@ -58,6 +58,11 @@ def compute_metrics(name:str,               # Name of the training stage (train,
         # Transforming logits in probabilities
         outputs = torch.nn.functional.softmax(outputs, dim=1)
 
+        # Transforming labels into one hot encoding
+        one_hot_labels = torch.zeros(labels.size(0), 264).to(labels.device)
+        one_hot_labels.scatter_(1, labels.view(-1, 1), 1.)
+        labels = one_hot_labels
+
         # Transforming outputs into one hot encoding
         outputs = torch.zeros_like(outputs).scatter_(1, torch.argmax(outputs, dim=1).unsqueeze(-1), 1.)
         labels, outputs = labels.cpu(), outputs.cpu()

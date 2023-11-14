@@ -108,6 +108,9 @@ class BirdClef(Dataset):
         binarizer.fit(self.classes)
 
         self.labels = binarizer.transform(metadata.primary_label)
+        
+        self.labels = torch.from_numpy(self.labels).float()
+        _, self.labels = torch.max(self.labels, dim=1)
 
         # Initialize a pipeline
         self.pipeline = MyPipeline()
@@ -119,9 +122,9 @@ class BirdClef(Dataset):
         filename = AUDIO_DATA_DIR + self.metadata['filename'][idx]
         mel_spectrogram = self.pipeline(filename)
 
-        label = self.labels[idx]
-        label = torch.from_numpy(label).float()
-
+        label = self.labels[idx].long()
+        print(label)
+        
         return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
 # %% ../nbs/02_dataset.ipynb 16
