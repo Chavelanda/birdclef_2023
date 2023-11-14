@@ -65,9 +65,12 @@ class MyPipeline(torch.nn.Module):
            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
            waveform = resampler(waveform)
 
-        # 3 Convert to mel-scale
+        # 2 Convert to mel-scale
         mel = self.melspec(waveform)
         mel = self.amptodb(mel)
+
+        # Rescale the mel-spectrogram to be between 0 and 1
+        mel = mel / mel.max()
      
         # 5 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
