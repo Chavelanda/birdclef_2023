@@ -35,7 +35,7 @@ class MyPipeline(torch.nn.Module):
         n_fft=2048,
         n_mels=128,
         hop_length = 1024,
-        power = 2.0
+        power = 8.0
     ):
         super().__init__()
 
@@ -65,21 +65,10 @@ class MyPipeline(torch.nn.Module):
            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
            waveform = resampler(waveform)
 
-        # 2 Filtering noise
-        #db_waveform = self.amptodb(waveform)
-        #filter_mask = waveform < 0.02
-
-        #filtered_waveform = waveform.clone()
-        #filtered_waveform[filter_mask] = 0  
-
         # 3 Convert to mel-scale
         mel = self.melspec(waveform)
         mel = self.amptodb(mel)
-
-        # 4 Rescale the data 0-1
-        mel_max = mel.max()
-        mel = mel / mel_max
-        
+     
         # 5 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
           print("Audio too short: stretching it.")
