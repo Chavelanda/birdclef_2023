@@ -93,12 +93,14 @@ def plot_audio(waveform:torch.Tensor, # The tensor containing the waveform
 # %% ../nbs/00_utils.ipynb 8
 def mel_to_wave(mel_specgram:torch.Tensor, # The tensor of the mel specgram
                 sample_rate:int = 32000,  # The sample rate of the audio
-                n_fft:int=2048
+                n_fft:int=2048,
+                db=True
                 )->torch.Tensor: # The tensor of the waveform
     "Function used to recover a waveform from a mel spectrogram"
     n_stft = int((n_fft//2) + 1)
     mel_specgram = mel_specgram.cpu()
-    mel_specgram = torch.pow(10, mel_specgram/10)
+    if db:
+        mel_specgram = torch.pow(10, mel_specgram/10)
     invers_transform = torchaudio.transforms.InverseMelScale(sample_rate=sample_rate, n_stft=n_stft)
     grifflim_transform = torchaudio.transforms.GriffinLim(n_fft=n_fft)
 
