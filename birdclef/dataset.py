@@ -15,7 +15,7 @@ import torchaudio
 
 from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spectrogram
 
-# %% ../nbs/02_dataset.ipynb 7
+# %% ../nbs/02_dataset.ipynb 8
 # Define custom feature extraction pipeline.
 #
 # 1. Check for sample rate and resample
@@ -71,7 +71,6 @@ class MyPipeline(torch.nn.Module):
         padding = (window_size) // 2 
         padded_waveform = torch.nn.functional.pad(waveform.unsqueeze(0), (padding, padding), 'constant', value=0).squeeze(0)
 
-<<<<<<< HEAD
         # Calculate the envelope using a moving average filter
         envelope = torch.nn.functional.avg_pool1d(padded_waveform.abs().unsqueeze(0), kernel_size=window_size, stride=1).squeeze(0)
         envelope = envelope[:, :waveform.shape[1]]
@@ -98,12 +97,6 @@ class MyPipeline(torch.nn.Module):
         # mel_max = mel.max()
         # mel = mel / mel_max
         
-=======
-        # 2 Convert to mel-scale
-        mel = self.melspec(waveform)
-        mel = self.amptodb(mel)
-     
->>>>>>> 8b8e8d95375fbf2e8856d3b42597129d3f7fcf41
         # 5 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
           print("Audio too short: stretching it.")
@@ -129,7 +122,7 @@ class MyPipeline(torch.nn.Module):
 
         return pseudo_waveform
 
-# %% ../nbs/02_dataset.ipynb 12
+# %% ../nbs/02_dataset.ipynb 15
 class BirdClef(Dataset):
 
     def __init__(self, metadata=None, classes=None):
@@ -159,7 +152,7 @@ class BirdClef(Dataset):
 
         return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
-# %% ../nbs/02_dataset.ipynb 16
+# %% ../nbs/02_dataset.ipynb 19
 dir = DATA_DIR
 try:
     train_metadata_base = pd.read_csv(dir + 'base/train_metadata.csv')
@@ -176,7 +169,7 @@ train_metadata_simple = train_metadata_base.loc[train_metadata_base.primary_labe
 val_metadata_simple = val_metadata_base.loc[val_metadata_base.primary_label.isin(simple_classes)].reset_index()
 test_metadata_simple = test_metadata_base.loc[test_metadata_base.primary_label.isin(simple_classes)].reset_index()
 
-# %% ../nbs/02_dataset.ipynb 17
+# %% ../nbs/02_dataset.ipynb 20
 dataset_dict = {
             'train_base': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label}),
             'val_base': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label}),
@@ -187,7 +180,7 @@ dataset_dict = {
             'test_simple': (BirdClef, {'metadata': test_metadata_simple, 'classes': train_metadata_simple.primary_label})
         }
 
-# %% ../nbs/02_dataset.ipynb 18
+# %% ../nbs/02_dataset.ipynb 21
 def get_dataset(dataset_key:str        # A key of the dataset dictionary
                 )->Dataset:         # Pytorch dataset
     "A getter method to retrieve the wanted dataset."
@@ -195,7 +188,7 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     ds_class, kwargs = dataset_dict[dataset_key]
     return ds_class(**kwargs)
 
-# %% ../nbs/02_dataset.ipynb 22
+# %% ../nbs/02_dataset.ipynb 25
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
