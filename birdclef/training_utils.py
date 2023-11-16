@@ -59,7 +59,7 @@ def compute_metrics(name:str,               # Name of the training stage (train,
         outputs = torch.nn.functional.softmax(outputs, dim=1)
 
         # Transforming labels into one hot encoding
-        one_hot_labels = torch.zeros(labels.size(0), 264).to(labels.device)
+        one_hot_labels = torch.zeros(outputs.size(0), outputs.size(1)).to(labels.device)
         one_hot_labels.scatter_(1, labels.view(-1, 1), 1.)
         labels = one_hot_labels
 
