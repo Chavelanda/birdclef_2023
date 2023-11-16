@@ -75,7 +75,6 @@ class MyPipeline(torch.nn.Module):
         # Calculate the envelope using a moving average filter
         envelope = torch.nn.functional.avg_pool1d(padded_waveform.abs().unsqueeze(0), kernel_size=window_size, stride=1).squeeze(0)
         envelope = envelope[:, :waveform.shape[1]]
-        print(envelope.shape)
 
         # Create a binary mask based on the energy and threshold
         gate_mask = envelope >= threshold_linear
@@ -142,7 +141,6 @@ class BirdClef(Dataset):
         mel_spectrogram = self.pipeline(filename)
 
         label = self.labels[idx].long()
-        print(label)
         
         return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
