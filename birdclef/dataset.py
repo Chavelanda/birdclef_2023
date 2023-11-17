@@ -127,9 +127,12 @@ class BirdClef(Dataset):
 
         self.labels = binarizer.transform(metadata.primary_label)
         
-        self.labels = torch.from_numpy(self.labels).float()
-        _, self.labels = torch.max(self.labels, dim=1)
+        self.num_classes = self.labels.shape[1]
 
+        self.labels = torch.from_numpy(self.labels).float()
+        
+        _, self.labels = torch.max(self.labels, dim=1)
+        
         # Initialize a pipeline
         self.pipeline = MyPipeline()
     

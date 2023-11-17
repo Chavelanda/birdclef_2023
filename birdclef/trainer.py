@@ -143,7 +143,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         test_dl = get_dataloader(config.test_key, config.val_kwargs)
 
         # Getting model, optimizer and loss function
-        model = get_model(config.model_key)
+        model = get_model(config.model_key, num_classes=train_dl.dataset.num_classes)
         model.to(config.device)
         optimizer = get_optimizer(config.optimizer_key, model, config.optimizer_kwargs)
         loss_func = get_loss_func(config.loss_key)

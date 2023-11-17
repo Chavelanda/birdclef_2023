@@ -37,18 +37,18 @@ class EfficientNetV2(torch.nn.Module):
 
 # %% ../nbs/03_network.ipynb 10
 model_dict = {
-        'simple_efficient_net_v2_s': (EfficientNetV2, {'num_classes': 3}),
         'efficient_net_v2_s': (EfficientNetV2, {})
         }
 
 def get_model(model_key:str, # A key of the model dictionary
-              weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None   # A file-like object to the model weights
+              weights_path:Union[str, PathLike, BinaryIO, IO[bytes]] = None,   # A file-like object to the model weights
+              num_classes:int = 264,  # Number of classes to predict
               )->Module:      # A pytorch model
     "A getter method to retrieve the wanted (possibly pretrained) model"
     assert model_key in model_dict, f'{model_key} is not an existing network, choose one from {model_dict.keys()}.'
     
     net_class, kwargs = model_dict[model_key]
-    model = net_class(**kwargs)
+    model = net_class(num_classes=num_classes, **kwargs)
 
     if weights_path is not None:
         model.load_state_dict(torch.load(weights_path))
