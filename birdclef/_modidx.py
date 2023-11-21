@@ -40,6 +40,7 @@ d = { 'settings': { 'branch': 'master',
             'birdclef.utils': { 'birdclef.utils.mel_to_wave': ('utils.html#mel_to_wave', 'birdclef/utils.py'),
                                 'birdclef.utils.plot_audio': ('utils.html#plot_audio', 'birdclef/utils.py'),
                                 'birdclef.utils.plot_fbank': ('utils.html#plot_fbank', 'birdclef/utils.py'),
+                                'birdclef.utils.plot_librosa': ('utils.html#plot_librosa', 'birdclef/utils.py'),
                                 'birdclef.utils.plot_specgram': ('utils.html#plot_specgram', 'birdclef/utils.py'),
                                 'birdclef.utils.plot_spectrogram': ('utils.html#plot_spectrogram', 'birdclef/utils.py'),
                                 'birdclef.utils.plot_waveform': ('utils.html#plot_waveform', 'birdclef/utils.py')}}}

@@ -12,8 +12,12 @@ from sklearn.preprocessing import LabelBinarizer
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torchaudio
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
+import numpy as np
 
-from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spectrogram
+from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spectrogram, plot_librosa
 
 # %% ../nbs/02_dataset.ipynb 7
 # Define custom feature extraction pipeline.
@@ -25,6 +29,10 @@ from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spect
 # 5. Check for lenght and stretch shorter videos
 
 
+
+
+    
+    
 class MyPipeline(torch.nn.Module):
     def __init__(
         self,
@@ -35,7 +43,8 @@ class MyPipeline(torch.nn.Module):
         n_fft=2048,
         n_mels=128,
         hop_length = 1024,
-        power = 8.0
+        power = 8.0,
+        per_channel = False
     ):
         super().__init__()
 
@@ -44,9 +53,12 @@ class MyPipeline(torch.nn.Module):
         self.c_length = seconds * sample_rate // hop_length + 1
         # self.c_length = c_length * 62.6 #626 sono 10 secondi
         self.sample_rate = sample_rate
+        self.hop_length = hop_length
+        self.per_channel = per_channel
         self.melspec = torchaudio.transforms.MelSpectrogram(sample_rate=self.sample_rate, n_fft=n_fft, hop_length=hop_length, n_mels=n_mels, f_min=f_min, f_max=f_max, power=power)
         self.amptodb = torchaudio.transforms.AmplitudeToDB()
         self.stretch = torchaudio.transforms.TimeStretch(hop_length=hop_length, n_freq=128)
+        
 
         #Augmentations
         # self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=30)
@@ -58,13 +70,11 @@ class MyPipeline(torch.nn.Module):
     def forward(self, filename):
         # 0 Load the File
         waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
-        
         # 1 Check for the sample rate and eventually resample to 32k
         if sample_rate != self.sample_rate:
-           print("Wrong sample rate: resampling audio")
-           resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
-           waveform = resampler(waveform)
-
+            print("Wrong sample rate: resampling audio")
+            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
+            waveform = resampler(waveform)
         # 2 Noise gating
         # threshold_linear = waveform.std()
         # window_size = 2000
@@ -85,18 +95,26 @@ class MyPipeline(torch.nn.Module):
 
         # 3 Convert to mel-scale
         mel = self.melspec(waveform)
-        mel = self.amptodb(mel)
-     
+        if not self.per_channel:
+            mel = self.amptodb(mel)
+
+        else:
+            melspec_np = mel.detach().cpu().numpy()
+            mel_pcen =librosa.pcen(melspec_np * (2 ** 31), sr=self.sample_rate, hop_length=self.hop_length)
+            mel = torch.from_numpy(mel_pcen)
+
+        
+    
         # 4 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
         #   print("Audio too short: stretching it.")
-          replay_rate =  mel.shape[2]/self.c_length
-          #print(f"replay rate {replay_rate}%")
-          mel = self.stretch(mel, replay_rate).real
-          mel = mel[:,:,0:self.c_length]
-          #print(f"stretched shape {stretched.shape}")
+            replay_rate =  mel.shape[2]/self.c_length
+            #print(f"replay rate {replay_rate}%")
+            mel = self.stretch(mel, replay_rate).real
+            mel = mel[:,:,0:self.c_length]
+            #print(f"stretched shape {stretched.shape}")
 
-        return mel.float()
+        return mel
     
     def inverse_transform(self, mel):
         n_stft = self.n_fft // 2 + 1
@@ -115,10 +133,11 @@ class MyPipeline(torch.nn.Module):
 # %% ../nbs/02_dataset.ipynb 12
 class BirdClef(Dataset):
 
-    def __init__(self, metadata=None, classes=None):
+    def __init__(self, metadata=None, classes=None, per_channel=False):
 
         self.metadata = metadata
         self.classes = classes
+        self.per_channel = per_channel
 
         self.length = len(self.metadata)
 
@@ -134,7 +153,7 @@ class BirdClef(Dataset):
         _, self.labels = torch.max(self.labels, dim=1)
         
         # Initialize a pipeline
-        self.pipeline = MyPipeline()
+        self.pipeline = MyPipeline(per_channel = self.per_channel)
     
     def __len__(self):
         return self.length
@@ -172,7 +191,15 @@ dataset_dict = {
 
             'train_simple': (BirdClef, {'metadata': train_metadata_simple, 'classes': train_metadata_simple.primary_label}),
             'val_simple': (BirdClef, {'metadata': val_metadata_simple, 'classes': train_metadata_simple.primary_label}),
-            'test_simple': (BirdClef, {'metadata': test_metadata_simple, 'classes': train_metadata_simple.primary_label})
+            'test_simple': (BirdClef, {'metadata': test_metadata_simple, 'classes': train_metadata_simple.primary_label}),
+            
+            'train_simple_per_channel': (BirdClef, {'metadata': train_metadata_simple, 'classes': train_metadata_simple.primary_label, 'per_channel': True}),
+            'val_simple_per_channel': (BirdClef, {'metadata': val_metadata_simple, 'classes': train_metadata_simple.primary_label, 'per_channel': True}),
+            'test_simple_per_channel': (BirdClef, {'metadata': test_metadata_simple, 'classes': train_metadata_simple.primary_label, 'per_channel': True}),
+            
+            'train_base_per_channel': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
+            'val_base_per_channel': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
+            'test_base_per_channel': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
         }
 
 # %% ../nbs/02_dataset.ipynb 18
