@@ -101,7 +101,7 @@ class MyPipeline(torch.nn.Module):
         else:
             melspec_np = mel.detach().cpu().numpy()
             mel_pcen =librosa.pcen(melspec_np * (2 ** 31), sr=self.sample_rate, hop_length=self.hop_length)
-            mel = torch.from_numpy(mel_pcen, dtype=torch.float32)
+            mel = torch.from_numpy(mel_pcen).float()
 
         
     
