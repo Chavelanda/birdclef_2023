@@ -13,7 +13,7 @@ import torch
 
 from .dataset import get_dataloader
 from .network import get_model
-from .training_utils import get_optimizer, get_loss_func, get_callback_func, compute_metrics, metrics_dict
+from .training_utils import get_optimizer, get_loss_func, get_callback_func,get_lr_scheduler, compute_metrics, metrics_dict
 
 # %% ../nbs/05_trainer.ipynb 4
 def log_weights(model, # A pytorch model
@@ -43,7 +43,10 @@ def train_one_epoch(model,                  # A pytorch model
                     step_ct,                # The number of backpropagation steps the model has done
                     n_steps_per_epoch,      # The number of steps for each epoch
                     callback_step,          # Steps indicating when the callback function must be called
-                    callback_func           # Callback function
+                    callback_func,          # Callback function
+                    scheduler_step,         # steps indicating when to call the learning rate scheduler
+                    scheduler_metric,       # metrics tu update the learning rate
+                    scheduler               # the learning rate scheduler
                     ):
     "Train a pytorch model for one epoch"
 
@@ -67,6 +70,12 @@ def train_one_epoch(model,                  # A pytorch model
 
         epoch_number = (step + 1) / n_steps_per_epoch + epoch
         metrics = compute_metrics('train', outputs, labels, train_loss, example_ct, step_ct, epoch_number)
+        
+        if (step + 1)%scheduler_step == 0:
+            if type(scheduler) is torch.optim.lr_scheduler.ReduceLROnPlateau:
+                scheduler.step(metrics[f"train/{scheduler_metric}"])
+            else:
+                scheduler.step()
 
         if (step + 1) < n_steps_per_epoch:
             # Log train metrics to wandb
@@ -148,6 +157,9 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         optimizer = get_optimizer(config.optimizer_key, model, config.optimizer_kwargs)
         loss_func = get_loss_func(config.loss_key)
         callback_func = get_callback_func(config.callback_key)
+        config.lr_scheduler_kwargs["total_iters"] = (len(train_dl)*config.epochs)//config.lr_scheduler_kwargs["scheduler_step"]
+        config.lr_scheduler_kwargs["T_max"] = (len(train_dl)*config.epochs)//config.lr_scheduler_kwargs["scheduler_step"]
+        lr_scheduler = get_lr_scheduler(config.lr_scheduler_key, optimizer, config.lr_scheduler_kwargs)
 
         n_steps_per_epoch = math.ceil(len(train_dl.dataset) / config.train_kwargs['batch_size'])
 
@@ -159,7 +171,7 @@ def train(conf = None # Wandb configurations containing all hyperparameters
         for epoch in range(config.epochs):
             print(f"Training epoch {epoch}")
             # Train
-            metrics, example_ct, step_ct = train_one_epoch(model, train_dl, loss_func, optimizer, config.device, epoch, example_ct, step_ct, n_steps_per_epoch, config.callback_step, callback_func)
+            metrics, example_ct, step_ct = train_one_epoch(model, train_dl, loss_func, optimizer, config.device, epoch, example_ct, step_ct, n_steps_per_epoch, config.callback_step, callback_func, config.lr_scheduler_kwargs["scheduler_step"], config.lr_scheduler_kwargs["scheduler_metric"], lr_scheduler)
 
             print("\tFinished training. Starting validation")
 
