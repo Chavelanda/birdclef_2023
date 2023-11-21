@@ -92,7 +92,7 @@ class MyPipeline(torch.nn.Module):
         #   print("Audio too short: stretching it.")
           replay_rate =  mel.shape[2]/self.c_length
           #print(f"replay rate {replay_rate}%")
-          mel = self.stretch(mel, replay_rate)
+          mel = self.stretch(mel, replay_rate).real
           mel = mel[:,:,0:self.c_length]
           #print(f"stretched shape {stretched.shape}")
 
