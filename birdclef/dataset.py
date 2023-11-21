@@ -89,10 +89,10 @@ class MyPipeline(torch.nn.Module):
      
         # 4 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
-          print("Audio too short: stretching it.")
+        #   print("Audio too short: stretching it.")
           replay_rate =  mel.shape[2]/self.c_length
           #print(f"replay rate {replay_rate}%")
-          mel = self.stretch(mel, replay_rate)
+          mel = self.stretch(mel, replay_rate).real
           mel = mel[:,:,0:self.c_length]
           #print(f"stretched shape {stretched.shape}")
 
