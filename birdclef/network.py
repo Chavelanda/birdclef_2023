@@ -37,7 +37,9 @@ class EfficientNetV2(torch.nn.Module):
 
 # %% ../nbs/03_network.ipynb 10
 model_dict = {
-        'efficient_net_v2_s': (EfficientNetV2, {})
+        'efficient_net_v2_s': (EfficientNetV2, {}),
+        'efficient_net_v2_m': (EfficientNetV2, {'size':'m'}),
+        'efficient_net_v2_l': (EfficientNetV2, {'size':'l'}),
         }
 
 def get_model(model_key:str, # A key of the model dictionary
