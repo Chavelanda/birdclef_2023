@@ -46,8 +46,10 @@ def get_optimizer(optim:str, # Key into the optimizer dictionary
     return optimizers_dict[optim](model.parameters(), **kwargs)
 
 # %% ../nbs/04_training_utils.ipynb 9
-def padded_cmap(outputs, labels):
-    "Requires one hot encoded labels. Outputs and labels must have the same shape"
+def padded_cmap(outputs, # Model outputs. Can be either numpy or torch. Must be one hot encoded
+                 labels # Labels. Can be either numpy or torch. Must be one hot encoded
+                 )->float: # Returns the padded cmap score
+    "Computes the padded cmap score"
     assert outputs.shape == labels.shape, f'Outputs and labels must have the same shape, got {outputs.shape} and {labels.shape} instead.'
 
     if type(outputs) == torch.Tensor:
