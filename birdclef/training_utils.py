@@ -2,14 +2,15 @@
 
 # %% auto 0
 __all__ = ['losses_dict', 'optimizers_dict', 'metrics_dict', 'callback_dict', 'scheduler_dict', 'get_loss_func', 'get_optimizer',
-           'compute_metrics', 'show_one_example', 'get_callback_func', 'get_lr_scheduler']
+           'padded_cmap', 'compute_metrics', 'show_one_example', 'get_callback_func', 'get_lr_scheduler']
 
 # %% ../nbs/04_training_utils.ipynb 4
 from operator import gt, lt
 from IPython.display import Audio
 from IPython.core.display import display
 
-from sklearn.metrics import accuracy_score, precision_recall_fscore_support
+import numpy as np
+from sklearn.metrics import accuracy_score, precision_recall_fscore_support, average_precision_score
 
 import torch
 import torchaudio
@@ -45,6 +46,25 @@ def get_optimizer(optim:str, # Key into the optimizer dictionary
     return optimizers_dict[optim](model.parameters(), **kwargs)
 
 # %% ../nbs/04_training_utils.ipynb 9
+def padded_cmap(outputs, labels):
+    "Requires one hot encoded labels. Outputs and labels must have the same shape"
+    assert outputs.shape == labels.shape, f'Outputs and labels must have the same shape, got {outputs.shape} and {labels.shape} instead.'
+
+    if type(outputs) == torch.Tensor:
+        outputs = outputs.detach().cpu().numpy()
+    if type(labels) == torch.Tensor:
+        labels = labels.detach().cpu().numpy()
+    
+    pad = np.ones((5, outputs.shape[1]))
+    padded_outputs = np.vstack([pad, outputs])
+    padded_labels = np.vstack([pad, labels])
+
+    score = average_precision_score(padded_labels, padded_outputs, average='macro')
+
+    return score
+
+
+# %% ../nbs/04_training_utils.ipynb 10
 def compute_metrics(name:str,               # Name of the training stage (train, val, test)
                     outputs:torch.Tensor,   # The output of the model       
                     labels:torch.Tensor,    # The ground truth
@@ -69,7 +89,8 @@ def compute_metrics(name:str,               # Name of the training stage (train,
 
         acc = accuracy_score(labels, outputs)
         prec, recall, f1_weighted, _ = precision_recall_fscore_support(labels, outputs, average='weighted', zero_division=0.0)
-    
+        p_cmap = padded_cmap(outputs, labels)
+
         return {f'{name}/loss': loss,
             f'{name}/example_ct': example_ct,
             f'{name}/step_ct': step_ct,
@@ -78,9 +99,10 @@ def compute_metrics(name:str,               # Name of the training stage (train,
             f'{name}/precision': prec,
             f'{name}/recall': recall,
             f'{name}/f1': f1_weighted,
+            f'{name}/padded_cmap': p_cmap
             }
 
-# %% ../nbs/04_training_utils.ipynb 10
+# %% ../nbs/04_training_utils.ipynb 11
 metrics_dict = {
     'loss': lt,
     'step': gt,
@@ -88,9 +110,10 @@ metrics_dict = {
     'precision': gt,
     'recall': gt,
     'f1': gt,
+    'padded_cmap': gt
 }
 
-# %% ../nbs/04_training_utils.ipynb 16
+# %% ../nbs/04_training_utils.ipynb 19
 def show_one_example(data, # The data received by the pytorch dataset
                      outputs:torch.Tensor): # The model prediction
     "A function that shows one input to the model together with its label and prediction"
@@ -110,7 +133,7 @@ def show_one_example(data, # The data received by the pytorch dataset
 
     
 
-# %% ../nbs/04_training_utils.ipynb 18
+# %% ../nbs/04_training_utils.ipynb 21
 callback_dict = {
     '': None,
     'show': show_one_example
@@ -124,7 +147,7 @@ def get_callback_func(callback:str # Key into the callback dictionary
     
     return callback_dict[callback]
 
-# %% ../nbs/04_training_utils.ipynb 20
+# %% ../nbs/04_training_utils.ipynb 23
 scheduler_dict = {
     "linear" : (torch.optim.lr_scheduler.LinearLR, {"start_factor" : None, "end_factor" : None, "total_iters" : None, "verbose" : 1}),
     "reduce_lr_on_plateau" : (torch.optim.lr_scheduler.ReduceLROnPlateau, {"patience" : 5, "verbose" : 1}),
