@@ -44,10 +44,12 @@ class MyPipeline(torch.nn.Module):
         n_mels=128,
         hop_length = 1024,
         power = 8.0,
-        per_channel = False
+        per_channel = False,
+        augmentations = False
     ):
         super().__init__()
 
+        self.augmentations = augmentations
         self.n_fft = n_fft
         self.seconds = seconds
         self.c_length = seconds * sample_rate // hop_length + 1
@@ -61,20 +63,26 @@ class MyPipeline(torch.nn.Module):
         
 
         #Augmentations
-        # self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=30)
-        # self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=30)
-        # self.noiser = torchaudio.transforms.AddNoise()
-        # self.pitchShift = torchaudio.transforms.PitchShift(resample_freq, 4)
+        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=3)
+        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=1)
+        self.noiser = torchaudio.transforms.AddNoise()
+        self.pitchShift = torchaudio.transforms.PitchShift(sample_rate, 2)
 
 
     def forward(self, filename):
         # 0 Load the File
         waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
+        
         # 1 Check for the sample rate and eventually resample to 32k
         if sample_rate != self.sample_rate:
             print("Wrong sample rate: resampling audio")
             resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
             waveform = resampler(waveform)
+            
+        
+        waveform = self.noiser(waveform, 0.005)
+        form = waveform
+            
         # 2 Noise gating
         # threshold_linear = waveform.std()
         # window_size = 2000
@@ -102,6 +110,8 @@ class MyPipeline(torch.nn.Module):
             melspec_np = mel.detach().cpu().numpy()
             mel_pcen =librosa.pcen(melspec_np * (2 ** 31), sr=self.sample_rate, hop_length=self.hop_length)
             mel = torch.from_numpy(mel_pcen).float()
+            
+            
 
         
     
@@ -114,7 +124,7 @@ class MyPipeline(torch.nn.Module):
             mel = mel[:,:,0:self.c_length]
             #print(f"stretched shape {stretched.shape}")
 
-        return mel
+        return mel, form
     
     def inverse_transform(self, mel):
         n_stft = self.n_fft // 2 + 1
