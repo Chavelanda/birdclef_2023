@@ -74,9 +74,10 @@ class MyPipeline(torch.nn.Module):
 
     def forward(self, filename):
         # 0 Load the File
+        print(self.sample_rate)
         if self.rnd_offset:
             metadata = torchaudio.info(filename)
-            if metadata.num_frames - self.seconds*self.sample_rate> 0:
+            if metadata.num_frames - self.seconds * self.sample_rate> 0:
                 rnd_offset = np.random.randint(0, metadata.num_frames - self.seconds*self.sample_rate)
             else:
                 # Handle the case where metadata.num_frames <= self.seconds*self.sample_rate
