@@ -21,7 +21,7 @@ from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spect
 
 # %% ../nbs/02_dataset.ipynb 7
 # Define custom feature extraction pipeline.
-#
+# 0. a randomn offset is applied to the audio file, so not always the same part of the audio is used
 # 1. Check for sample rate and resample
 # 2. Waveform Augmenations
 # 3. Convert to mel-scale
@@ -45,7 +45,8 @@ class MyPipeline(torch.nn.Module):
         hop_length = 1024,
         power = 8.0,
         per_channel = False,
-        augmentations = False
+        augmentations = False,
+        rnd_offset = False,
     ):
         super().__init__()
 
@@ -63,15 +64,22 @@ class MyPipeline(torch.nn.Module):
         
 
         #Augmentations
-        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=3)
-        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=1)
+        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=30)
+        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=30)
         self.noiser = torchaudio.transforms.AddNoise()
         self.pitchShift = torchaudio.transforms.PitchShift(sample_rate, 2)
+        self.speed_perturb = torchaudio.transforms.SpeedPerturbation(sample_rate, [0.5])
+        self.rnd_offset = rnd_offset
 
 
     def forward(self, filename):
         # 0 Load the File
-        waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
+        if self.rnd_offset:
+            metadata = torchaudio.info(filename)
+            rnd_offset = np.random.randint(0, metadata.num_frames - self.seconds*self.sample_rate)
+            waveform, sample_rate = torchaudio.load(filename, frame_offset=rnd_offset, num_frames=self.seconds*self.sample_rate)
+        else: 
+            waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
         
         # 1 Check for the sample rate and eventually resample to 32k
         if sample_rate != self.sample_rate:
@@ -80,8 +88,16 @@ class MyPipeline(torch.nn.Module):
             waveform = resampler(waveform)
             
         
-        waveform = self.noiser(waveform, 0.005)
-        form = waveform
+        
+        # 2 Waveform Augmenations
+        if self.augmentations:
+            #  Noise
+            noise = torch.randn_like(waveform) 
+            snr_dbs = torch.tensor([20])
+            waveform = self.noiser(waveform, noise, snr_dbs)
+            # Speed perturbation
+            waveform = self.speed_perturb(waveform)[0]
+        
             
         # 2 Noise gating
         # threshold_linear = waveform.std()
@@ -103,6 +119,12 @@ class MyPipeline(torch.nn.Module):
 
         # 3 Convert to mel-scale
         mel = self.melspec(waveform)
+        
+        # 4 Mel Augmenations
+        if self.augmentations:
+            mel = self.maskingTime(mel)
+            mel = self.maskingFreq(mel)
+        
         if not self.per_channel:
             mel = self.amptodb(mel)
 
@@ -124,7 +146,7 @@ class MyPipeline(torch.nn.Module):
             mel = mel[:,:,0:self.c_length]
             #print(f"stretched shape {stretched.shape}")
 
-        return mel, form
+        return mel
     
     def inverse_transform(self, mel):
         n_stft = self.n_fft // 2 + 1
@@ -140,14 +162,16 @@ class MyPipeline(torch.nn.Module):
 
         return pseudo_waveform
 
-# %% ../nbs/02_dataset.ipynb 12
+# %% ../nbs/02_dataset.ipynb 15
 class BirdClef(Dataset):
 
-    def __init__(self, metadata=None, classes=None, per_channel=False):
+    def __init__(self, metadata=None, classes=None, per_channel=False, augmentations=False, rnd_offset=False):
 
         self.metadata = metadata
         self.classes = classes
         self.per_channel = per_channel
+        self.augmentations = augmentations
+        self.rnd_offset = rnd_offset
 
         self.length = len(self.metadata)
 
@@ -163,7 +187,7 @@ class BirdClef(Dataset):
         _, self.labels = torch.max(self.labels, dim=1)
         
         # Initialize a pipeline
-        self.pipeline = MyPipeline(per_channel = self.per_channel)
+        self.pipeline = MyPipeline(per_channel = self.per_channel, augmentations = self.augmentations, rnd_offset = self.rnd_offset)
     
     def __len__(self):
         return self.length
@@ -176,7 +200,7 @@ class BirdClef(Dataset):
         
         return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
-# %% ../nbs/02_dataset.ipynb 16
+# %% ../nbs/02_dataset.ipynb 19
 dir = DATA_DIR
 try:
     train_metadata_base = pd.read_csv(dir + 'base/train_metadata.csv')
@@ -193,7 +217,7 @@ train_metadata_simple = train_metadata_base.loc[train_metadata_base.primary_labe
 val_metadata_simple = val_metadata_base.loc[val_metadata_base.primary_label.isin(simple_classes)].reset_index()
 test_metadata_simple = test_metadata_base.loc[test_metadata_base.primary_label.isin(simple_classes)].reset_index()
 
-# %% ../nbs/02_dataset.ipynb 17
+# %% ../nbs/02_dataset.ipynb 20
 dataset_dict = {
             'train_base': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label}),
             'val_base': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label}),
@@ -210,9 +234,14 @@ dataset_dict = {
             'train_base_per_channel': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
             'val_base_per_channel': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
             'test_base_per_channel': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
+            
+            'train_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
+            'val_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
+            'test_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
+            
         }
 
-# %% ../nbs/02_dataset.ipynb 18
+# %% ../nbs/02_dataset.ipynb 21
 def get_dataset(dataset_key:str        # A key of the dataset dictionary
                 )->Dataset:         # Pytorch dataset
     "A getter method to retrieve the wanted dataset."
@@ -220,7 +249,7 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     ds_class, kwargs = dataset_dict[dataset_key]
     return ds_class(**kwargs)
 
-# %% ../nbs/02_dataset.ipynb 22
+# %% ../nbs/02_dataset.ipynb 25
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
