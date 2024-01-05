@@ -74,10 +74,9 @@ class MyPipeline(torch.nn.Module):
 
     def forward(self, filename):
         # 0 Load the File
-        print(self.sample_rate)
         if self.rnd_offset:
             metadata = torchaudio.info(filename)
-            if metadata.num_frames - self.seconds * self.sample_rate> 0:
+            if metadata.num_frames - self.seconds * self.sample_rate > 0:
                 rnd_offset = np.random.randint(0, metadata.num_frames - self.seconds*self.sample_rate)
             else:
                 # Handle the case where metadata.num_frames <= self.seconds*self.sample_rate
@@ -168,7 +167,7 @@ class MyPipeline(torch.nn.Module):
 
         return pseudo_waveform
 
-# %% ../nbs/02_dataset.ipynb 15
+# %% ../nbs/02_dataset.ipynb 16
 class BirdClef(Dataset):
 
     def __init__(self, metadata=None, classes=None, per_channel=False, augmentations=False, rnd_offset=False):
@@ -206,7 +205,7 @@ class BirdClef(Dataset):
         
         return {'input': mel_spectrogram, 'label': label, 'filename': filename}
 
-# %% ../nbs/02_dataset.ipynb 19
+# %% ../nbs/02_dataset.ipynb 20
 dir = DATA_DIR
 try:
     train_metadata_base = pd.read_csv(dir + 'base/train_metadata.csv')
@@ -223,7 +222,7 @@ train_metadata_simple = train_metadata_base.loc[train_metadata_base.primary_labe
 val_metadata_simple = val_metadata_base.loc[val_metadata_base.primary_label.isin(simple_classes)].reset_index()
 test_metadata_simple = test_metadata_base.loc[test_metadata_base.primary_label.isin(simple_classes)].reset_index()
 
-# %% ../nbs/02_dataset.ipynb 20
+# %% ../nbs/02_dataset.ipynb 21
 dataset_dict = {
             'train_base': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label}),
             'val_base': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label}),
@@ -247,7 +246,7 @@ dataset_dict = {
             
         }
 
-# %% ../nbs/02_dataset.ipynb 21
+# %% ../nbs/02_dataset.ipynb 22
 def get_dataset(dataset_key:str        # A key of the dataset dictionary
                 )->Dataset:         # Pytorch dataset
     "A getter method to retrieve the wanted dataset."
@@ -255,7 +254,7 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     ds_class, kwargs = dataset_dict[dataset_key]
     return ds_class(**kwargs)
 
-# %% ../nbs/02_dataset.ipynb 25
+# %% ../nbs/02_dataset.ipynb 26
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
