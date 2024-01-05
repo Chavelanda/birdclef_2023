@@ -76,7 +76,12 @@ class MyPipeline(torch.nn.Module):
         # 0 Load the File
         if self.rnd_offset:
             metadata = torchaudio.info(filename)
-            rnd_offset = np.random.randint(0, metadata.num_frames - self.seconds*self.sample_rate)
+            if metadata.num_frames > self.seconds*self.sample_rate:
+                rnd_offset = np.random.randint(0, metadata.num_frames - self.seconds*self.sample_rate)
+            else:
+                # Handle the case where metadata.num_frames <= self.seconds*self.sample_rate
+                # For example, you can set rnd_offset to a default value:
+                rnd_offset = 0
             waveform, sample_rate = torchaudio.load(filename, frame_offset=rnd_offset, num_frames=self.seconds*self.sample_rate)
         else: 
             waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
