@@ -82,14 +82,14 @@ class MyPipeline(torch.nn.Module):
                 # Handle the case where metadata.num_frames <= self.seconds*self.sample_rate
                 # For example, you can set rnd_offset to a default value:
                 rnd_offset = 0
-            waveform, sample_rate = torchaudio.load(filename, frame_offset=rnd_offset, num_frames=self.seconds*self.sample_rate)
+            waveform, rate = torchaudio.load(filename, frame_offset=rnd_offset, num_frames=self.seconds*self.sample_rate)
         else: 
-            waveform, sample_rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
+            waveform, rate = torchaudio.load(filename, frame_offset=0, num_frames=self.seconds*self.sample_rate)
         
         # 1 Check for the sample rate and eventually resample to 32k
-        if sample_rate != self.sample_rate:
+        if rate != self.sample_rate:
             print("Wrong sample rate: resampling audio")
-            resampler = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=self.sample_rate)
+            resampler = torchaudio.transforms.Resample(orig_freq=rate, new_freq=self.sample_rate)
             waveform = resampler(waveform)
             
         
