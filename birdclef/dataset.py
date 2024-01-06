@@ -261,7 +261,5 @@ def get_dataloader(dataset_key:str,            # The key to access the dataset
     "A function to get a dataloader from a specific dataset"
     dataset = get_dataset(dataset_key)
     
-    # Add the custom collate_fn function to the dataloader_kwargs dictionary
-    dataloader_kwargs['collate_fn'] = collate_fn
 
     return DataLoader(dataset, **dataloader_kwargs, )
