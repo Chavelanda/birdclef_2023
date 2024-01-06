@@ -254,11 +254,14 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     ds_class, kwargs = dataset_dict[dataset_key]
     return ds_class(**kwargs)
 
-# %% ../nbs/02_dataset.ipynb 26
+# %% ../nbs/02_dataset.ipynb 27
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
     "A function to get a dataloader from a specific dataset"
     dataset = get_dataset(dataset_key)
+    
+    # Add the custom collate_fn function to the dataloader_kwargs dictionary
+    dataloader_kwargs['collate_fn'] = collate_fn
 
-    return DataLoader(dataset, **dataloader_kwargs)
+    return DataLoader(dataset, **dataloader_kwargs, )
