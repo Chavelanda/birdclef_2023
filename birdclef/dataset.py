@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['dir', 'simple_classes', 'train_metadata_simple', 'val_metadata_simple', 'test_metadata_simple', 'dataset_dict',
-           'MyPipeline', 'BirdClef', 'get_dataset', 'collate_fn', 'get_dataloader']
+           'MyPipeline', 'BirdClef', 'get_dataset', 'get_dataloader']
 
 # %% ../nbs/02_dataset.ipynb 3
 from IPython.display import Audio
@@ -255,25 +255,11 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     return ds_class(**kwargs)
 
 # %% ../nbs/02_dataset.ipynb 26
-def collate_fn(batch):
-    # Stack the input tensors along a new dimension
-    inputs = torch.stack([item['input'] for item in batch])
-
-    # Stack the label tensors along a new dimension
-    labels = torch.stack([item['label'] for item in batch])
-
-    # Keep filenames as a list
-    filenames = [item['filename'] for item in batch]
-
-    return {'input': inputs, 'label': labels, 'filename': filenames}
-
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
     "A function to get a dataloader from a specific dataset"
     dataset = get_dataset(dataset_key)
     
-    # Add the custom collate_fn function to the dataloader_kwargs dictionary
-    dataloader_kwargs['collate_fn'] = collate_fn
 
     return DataLoader(dataset, **dataloader_kwargs, )
