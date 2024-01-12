@@ -16,6 +16,7 @@ import librosa
 import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 from .utils import DATA_DIR, AUDIO_DATA_DIR, mel_to_wave, plot_audio, plot_spectrogram, plot_librosa
 
@@ -64,11 +65,10 @@ class MyPipeline(torch.nn.Module):
         
 
         #Augmentations
-        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=30)
-        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=30)
+        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=20)
+        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=20)
         self.noiser = torchaudio.transforms.AddNoise()
-        self.pitchShift = torchaudio.transforms.PitchShift(sample_rate, 2)
-        self.speed_perturb = torchaudio.transforms.SpeedPerturbation(sample_rate, [0.5])
+        self.speed_perturb = torchaudio.transforms.SpeedPerturbation(sample_rate, [0.9, 1.1, 1.0, 1.0, 1.0, 0.8, 1.2, 1.0])
         self.rnd_offset = rnd_offset
 
 
@@ -93,42 +93,30 @@ class MyPipeline(torch.nn.Module):
             waveform = resampler(waveform)
             
         
-        
         # 2 Waveform Augmenations
         if self.augmentations:
-            #  Noise
-            noise = torch.randn_like(waveform) 
-            snr_dbs = torch.tensor([20])
-            waveform = self.noiser(waveform, noise, snr_dbs)
+            #  Rasdom noise
+            if np.random.random() > 0.8:
+                noise = torch.randn_like(waveform) 
+                snr_dbs = torch.tensor([20])
+                waveform = self.noiser(waveform, noise, snr_dbs)
             # Speed perturbation
-            # waveform = self.speed_perturb(waveform)[0]
+            if np.random.random() > 0.8:
+                waveform = self.speed_perturb(waveform)[0]
+                
         
-            
-        # 2 Noise gating
-        # threshold_linear = waveform.std()
-        # window_size = 2000
-        # # Pad the waveform to ensure the envelope has the same length
-        # padding = (window_size) // 2 
-        # padded_waveform = torch.nn.functional.pad(waveform.unsqueeze(0), (padding, padding), 'constant', value=0).squeeze(0)
-
-        # # Calculate the envelope using a moving average filter
-        # envelope = torch.nn.functional.avg_pool1d(padded_waveform.abs().unsqueeze(0), kernel_size=window_size, stride=1).squeeze(0)
-        # envelope = envelope[:, :waveform.shape[1]]
-
-        # # Create a binary mask based on the energy and threshold
-        # gate_mask = envelope >= threshold_linear
-
-        # # Apply the gating mask to the waveform
-        # gated_waveform = waveform.clone()
-        # gated_waveform[~gate_mask] *= 0.1
 
         # 3 Convert to mel-scale
         mel = self.melspec(waveform)
         
         # 4 Mel Augmenations
         if self.augmentations:
-            mel = self.maskingTime(mel)
-            mel = self.maskingFreq(mel)
+            if np.random.random() > 0.8:
+                mel = self.maskingTime(mel)
+                
+            if np.random.random() > 0.8:
+                mel = self.maskingFreq(mel)
+                
         
         if not self.per_channel:
             mel = self.amptodb(mel)
@@ -140,8 +128,6 @@ class MyPipeline(torch.nn.Module):
             
             
 
-        
-    
         # 4 Check for the length and stretch it to 10s, it is a transformation used to regularize the length of the data
         if mel.shape[2] < self.c_length:
             # print("Audio too short: stretching it.")
@@ -248,6 +234,14 @@ dataset_dict = {
             'train_base_per_channel': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
             'val_base_per_channel': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
             'test_base_per_channel': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True}),
+            
+            'train_base_pcn_aug': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True}),
+            'val_base_pcn_aug': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True}),
+            'test_base_pcn_aug': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True}),
+            
+            'train_base_pcn_rnd': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'rnd_offset': True}),
+            'val_base_pcn_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'rnd_offset': True}),
+            'test_base_pcn_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'rnd_offset': True}),
             
             'train_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
             'val_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
