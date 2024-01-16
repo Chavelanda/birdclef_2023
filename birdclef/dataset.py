@@ -65,10 +65,10 @@ class MyPipeline(torch.nn.Module):
         
 
         #Augmentations
-        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=20)
-        self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=20)
+        self.maskingFreq =  torchaudio.transforms.FrequencyMasking(freq_mask_param=40)
+        # self.maskingTime = torchaudio.transforms.TimeMasking(time_mask_param=20)
         self.noiser = torchaudio.transforms.AddNoise()
-        self.speed_perturb = torchaudio.transforms.SpeedPerturbation(sample_rate, [0.9, 1.1, 1.0, 1.0, 1.0, 0.8, 1.2, 1.0])
+        
         self.rnd_offset = rnd_offset
 
 
@@ -96,14 +96,10 @@ class MyPipeline(torch.nn.Module):
         # 2 Waveform Augmenations
         if self.augmentations:
             #  Rasdom noise
-            if np.random.random() > 0.8:
+            if np.random.random() > 0.5:
                 noise = torch.randn_like(waveform) 
-                snr_dbs = torch.tensor([20])
-                waveform = self.noiser(waveform, noise, snr_dbs)
-            # Speed perturbation
-            if np.random.random() > 0.8:
-                waveform = self.speed_perturb(waveform)[0]
-                
+                snr_dbs = torch.tensor([10])
+                waveform = self.noiser(waveform, noise, snr_dbs)               
         
 
         # 3 Convert to mel-scale
@@ -111,10 +107,10 @@ class MyPipeline(torch.nn.Module):
         
         # 4 Mel Augmenations
         if self.augmentations:
-            if np.random.random() > 0.8:
-                mel = self.maskingTime(mel)
+            # if np.random.random() > 0.8:
+            #     mel = self.maskingTime(mel)
                 
-            if np.random.random() > 0.8:
+            if np.random.random() > 0.5:
                 mel = self.maskingFreq(mel)
                 
         
@@ -166,6 +162,8 @@ class MyPipeline(torch.nn.Module):
 class BirdClef(Dataset):
 
     def __init__(self, metadata=None, classes=None, per_channel=False, augmentations=False, rnd_offset=False):
+        
+    
 
         self.metadata = metadata
         sorted_classes = classes.sort_values()
@@ -218,7 +216,19 @@ train_metadata_simple = train_metadata_base.loc[train_metadata_base.primary_labe
 val_metadata_simple = val_metadata_base.loc[val_metadata_base.primary_label.isin(simple_classes)].reset_index()
 test_metadata_simple = test_metadata_base.loc[test_metadata_base.primary_label.isin(simple_classes)].reset_index()
 
-# %% ../nbs/02_dataset.ipynb 20
+# %% ../nbs/02_dataset.ipynb 21
+dir = DATA_DIR
+try:
+    train_metadata_repeated = pd.read_csv(dir + 'repeated/train_metadata.csv')
+    val_metadata_repeated = pd.read_csv(dir + 'repeated/val_metadata.csv')
+    test_metadata_repeated = pd.read_csv(dir + 'repeated/test_metadata.csv')
+except FileNotFoundError:
+    dir = 'data/'
+    train_metadata_repeated = pd.read_csv(dir + 'repeated/train_metadata.csv')
+    val_metadata_repeated = pd.read_csv(dir + 'repeated/val_metadata.csv')
+    test_metadata_repeated = pd.read_csv(dir + 'repeated/test_metadata.csv')
+
+# %% ../nbs/02_dataset.ipynb 22
 dataset_dict = {
             'train_base': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label}),
             'val_base': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label}),
@@ -248,9 +258,13 @@ dataset_dict = {
             'val_base_pcn_aug_rnd': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
             'test_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
             
+            'train_repeated_pcn_rnd': (BirdClef, {'metadata': train_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
+            'val_repeated_pcn_rnd': (BirdClef, {'metadata': val_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
+            'test_repeated_pcn_rnd': (BirdClef, {'metadata': test_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
+            
         }
 
-# %% ../nbs/02_dataset.ipynb 21
+# %% ../nbs/02_dataset.ipynb 23
 def get_dataset(dataset_key:str        # A key of the dataset dictionary
                 )->Dataset:         # Pytorch dataset
     "A getter method to retrieve the wanted dataset."
@@ -258,7 +272,7 @@ def get_dataset(dataset_key:str        # A key of the dataset dictionary
     ds_class, kwargs = dataset_dict[dataset_key]
     return ds_class(**kwargs)
 
-# %% ../nbs/02_dataset.ipynb 25
+# %% ../nbs/02_dataset.ipynb 27
 def get_dataloader(dataset_key:str,            # The key to access the dataset
                 dataloader_kwargs:dict={}      # The optional parameters for a pytorch dataloader
                 )->DataLoader:              # Pytorch dataloader
