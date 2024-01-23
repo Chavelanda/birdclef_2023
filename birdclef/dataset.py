@@ -216,18 +216,6 @@ train_metadata_simple = train_metadata_base.loc[train_metadata_base.primary_labe
 val_metadata_simple = val_metadata_base.loc[val_metadata_base.primary_label.isin(simple_classes)].reset_index()
 test_metadata_simple = test_metadata_base.loc[test_metadata_base.primary_label.isin(simple_classes)].reset_index()
 
-# %% ../nbs/02_dataset.ipynb 21
-dir = DATA_DIR
-try:
-    train_metadata_repeated = pd.read_csv(dir + 'repeated/train_metadata.csv')
-    val_metadata_repeated = pd.read_csv(dir + 'repeated/val_metadata.csv')
-    test_metadata_repeated = pd.read_csv(dir + 'repeated/test_metadata.csv')
-except FileNotFoundError:
-    dir = 'data/'
-    train_metadata_repeated = pd.read_csv(dir + 'repeated/train_metadata.csv')
-    val_metadata_repeated = pd.read_csv(dir + 'repeated/val_metadata.csv')
-    test_metadata_repeated = pd.read_csv(dir + 'repeated/test_metadata.csv')
-
 # %% ../nbs/02_dataset.ipynb 22
 dataset_dict = {
             'train_base': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label}),
@@ -257,10 +245,6 @@ dataset_dict = {
             'train_base_pcn_aug_rnd': (BirdClef, {'metadata': train_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
             'val_base_pcn_aug_rnd': (BirdClef, {'metadata': val_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
             'test_base_pcn_aug_rnd': (BirdClef, {'metadata': test_metadata_base, 'classes': train_metadata_base.primary_label, 'per_channel': True, 'augmentations': True, 'rnd_offset': True}),
-            
-            'train_repeated_pcn_rnd': (BirdClef, {'metadata': train_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
-            'val_repeated_pcn_rnd': (BirdClef, {'metadata': val_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
-            'test_repeated_pcn_rnd': (BirdClef, {'metadata': test_metadata_repeated, 'classes': train_metadata_repeated.primary_label, 'per_channel': True, 'rnd_offset': True}),
             
         }
 
