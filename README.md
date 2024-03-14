@@ -8,6 +8,7 @@ The dataset comprises 16,000 distinct audio samples of varying lengths. Here are
 2. Type: Manually annotated tags such as “call,” “song,” “flight call,” and “adult.”
 3. Latitude and Longitude Information: Provides positional data.
 4. Rating: Manually assigned quality ratings.
+   
 We have decided to remove all audio samples with a rating lower than 3​ as they accounted for only 14% of the data​. Moreover we immediatly noticed a problem of class unbalance which has to be dealt with. 
 ![Class Unbalance](img/image.png)
 
