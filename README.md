@@ -21,7 +21,7 @@ To improve the results we decided to employ an adaptive procedure named perchann
 
 ## Dealing With Unbalance
 We decided to perform oversampling in order to deal with class unbalance, the number of samples is based on the class count while the audio to be oversampled is choosen based on its relative length on the total length of that class audio. The following graph shows the resulting per-class F1 score with the relative class prevalence.
-![Per Class F1](img/oversampled.img)
+![Per Class F1](img/oversampled.png)
 
 
 
